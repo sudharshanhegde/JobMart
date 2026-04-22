@@ -294,7 +294,6 @@ const strings = {
     requestSent: 'Request sent',
     noWhatsApp: 'No WhatsApp number available',
     away: 'away',
-    ratings: 'ratings',
   },
 
   kn: {
@@ -592,7 +591,6 @@ const strings = {
     requestSent: 'ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಿದೆ',
     noWhatsApp: 'WhatsApp ನಂಬರ್ ಇಲ್ಲ',
     away: 'ದೂರ',
-    ratings: 'ರೇಟಿಂಗ್‌ಗಳು',
   },
 };
 

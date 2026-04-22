@@ -5,30 +5,33 @@ import {
   PlusSquare, Users, LogOut, X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { t } from '../../utils/i18n';
 import toast from 'react-hot-toast';
-
-const workerLinks = [
-  { to: '/dashboard', icon: Home, label: 'Home' },
-  { to: '/jobs', icon: Search, label: 'Browse Jobs' },
-  { to: '/my-applications', icon: Briefcase, label: 'My Applications' },
-  { to: '/saved-jobs', icon: BookmarkCheck, label: 'Saved Jobs' },
-  { to: '/connections', icon: Users, label: 'Connections' },
-  { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/profile', icon: User, label: 'My Profile' },
-];
-
-const providerLinks = [
-  { to: '/dashboard', icon: Home, label: 'Home' },
-  { to: '/my-jobs', icon: Briefcase, label: 'My Job Posts' },
-  { to: '/post-job', icon: PlusSquare, label: 'Post a Job' },
-  { to: '/connections', icon: Users, label: 'Connections' },
-  { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/profile', icon: User, label: 'My Profile' },
-];
 
 export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
+  const { lang } = useLanguage();
   const navigate = useNavigate();
+
+  const workerLinks = [
+    { to: '/dashboard', icon: Home, label: t(lang, 'navHome') },
+    { to: '/jobs', icon: Search, label: t(lang, 'navBrowseJobs') },
+    { to: '/my-applications', icon: Briefcase, label: t(lang, 'navMyApplications') },
+    { to: '/saved-jobs', icon: BookmarkCheck, label: t(lang, 'navSavedJobs') },
+    { to: '/connections', icon: Users, label: t(lang, 'navConnections') },
+    { to: '/notifications', icon: Bell, label: t(lang, 'navNotifications') },
+    { to: '/profile', icon: User, label: t(lang, 'navMyProfile') },
+  ];
+
+  const providerLinks = [
+    { to: '/dashboard', icon: Home, label: t(lang, 'navHome') },
+    { to: '/my-jobs', icon: Briefcase, label: t(lang, 'navMyJobPosts') },
+    { to: '/post-job', icon: PlusSquare, label: t(lang, 'navPostJob') },
+    { to: '/connections', icon: Users, label: t(lang, 'navConnections') },
+    { to: '/notifications', icon: Bell, label: t(lang, 'navNotifications') },
+    { to: '/profile', icon: User, label: t(lang, 'navMyProfile') },
+  ];
   const links = user?.role === 'provider' ? providerLinks : workerLinks;
 
   const handleLogout = () => {
@@ -100,7 +103,7 @@ export default function Sidebar({ open, onClose }) {
           <button onClick={handleLogout}
             className="flex items-center gap-3 text-slate-500 hover:text-red-400 text-sm w-full px-3 py-2.5 rounded-xl hover:bg-red-400/5 transition-all">
             <LogOut className="w-4 h-4" />
-            Logout
+            {t(lang, 'logout')}
           </button>
         </div>
       </aside>

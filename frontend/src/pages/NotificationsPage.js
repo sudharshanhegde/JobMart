@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Star, CheckCheck, Briefcase, Loader } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { useLanguage } from '../context/LanguageContext';
+import { t, tTimeAgo } from '../utils/i18n';
 
 const TYPE_META = {
   new_job:            { icon: Briefcase, color: 'bg-blue-500/20 text-blue-400' },
@@ -12,16 +14,9 @@ const TYPE_META = {
   new_rating:         { icon: Star, color: 'bg-yellow-500/20 text-yellow-400' },
 };
 
-function timeAgo(dateStr) {
-  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
-
 export default function NotificationsPage() {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -63,7 +58,7 @@ export default function NotificationsPage() {
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">Notifications</h1>
+        <h1 className="text-xl font-bold text-white">{t(lang, 'notificationsTitle')}</h1>
         {notifications.some((n) => !n.isRead) && (
           <button
             onClick={async () => {
@@ -72,7 +67,7 @@ export default function NotificationsPage() {
             }}
             className="text-xs text-primary-400 hover:text-primary-300 font-medium"
           >
-            Mark all read
+            {t(lang, 'markAllRead')}
           </button>
         )}
       </div>
@@ -80,8 +75,8 @@ export default function NotificationsPage() {
       {notifications.length === 0 ? (
         <div className="bg-navy-700 rounded-2xl p-12 text-center shadow-sm">
           <Bell className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <p className="text-white font-semibold">No notifications yet</p>
-          <p className="text-slate-400 text-sm mt-1">We'll let you know when something happens</p>
+          <p className="text-white font-semibold">{t(lang, 'noNotifications')}</p>
+          <p className="text-slate-400 text-sm mt-1">{t(lang, 'notificationHint')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -104,7 +99,7 @@ export default function NotificationsPage() {
                     {n.title}
                   </p>
                   <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{n.message}</p>
-                  <p className="text-[11px] text-slate-500 mt-1">{timeAgo(n.createdAt)}</p>
+                  <p className="text-[11px] text-slate-500 mt-1">{tTimeAgo(lang, n.createdAt)}</p>
                 </div>
                 {!n.isRead && (
                   <span className="w-2 h-2 rounded-full bg-primary-400 flex-shrink-0 mt-1.5" />

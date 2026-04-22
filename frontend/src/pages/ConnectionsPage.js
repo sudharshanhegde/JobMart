@@ -5,6 +5,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { t } from '../utils/i18n';
 import toast from 'react-hot-toast';
 
 // Fix default leaflet icons
@@ -28,15 +30,15 @@ function makeIcon(initial, color) {
 function UserCard({ profile, status, onRequest }) {
   // status: 'none' | 'pending' | 'connected'
   const user = profile.user;
+  const { lang } = useLanguage();
 
   const [contact, setContact] = useState(null);
   const [loadingContact, setLoadingContact] = useState(false);
 
   const fetchContact = async () => {
     if (contact) {
-      // already loaded, open WhatsApp
       const number = contact.whatsappNumber?.replace(/\D/g, '') || contact.phoneNumber?.replace(/\D/g, '');
-      if (!number) return toast.error('No WhatsApp number available');
+      if (!number) return toast.error(t(lang, 'noWhatsApp'));
       const text = encodeURIComponent(`Hi ${contact.name}! I found your profile on JobMart.`);
       window.open(`https://wa.me/91${number}?text=${text}`, '_blank');
       return;
@@ -46,7 +48,7 @@ function UserCard({ profile, status, onRequest }) {
       const res = await api.get(`/users/contact/${user._id}`);
       setContact(res.data.user);
       const number = res.data.user.whatsappNumber?.replace(/\D/g, '') || res.data.user.phoneNumber?.replace(/\D/g, '');
-      if (!number) return toast.error('No WhatsApp number available');
+      if (!number) return toast.error(t(lang, 'noWhatsApp'));
       const text = encodeURIComponent(`Hi ${res.data.user.name}! I found your profile on JobMart.`);
       window.open(`https://wa.me/91${number}?text=${text}`, '_blank');
     } catch {
@@ -79,7 +81,7 @@ function UserCard({ profile, status, onRequest }) {
             </span>
           )}
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${profile.status === 'available' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-slate-400'}`}>
-            {profile.status}
+            {profile.status === 'available' ? t(lang, 'available') : t(lang, 'busy')}
           </span>
         </div>
       </div>
@@ -87,22 +89,22 @@ function UserCard({ profile, status, onRequest }) {
         {status === 'connected' ? (
           <>
             <span className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-xl bg-green-500/20 text-green-400">
-              <UserCheck className="w-3.5 h-3.5" /> Connected
+              <UserCheck className="w-3.5 h-3.5" /> {t(lang, 'connected')}
             </span>
             <button onClick={fetchContact} disabled={loadingContact}
               className="flex items-center gap-1 text-xs bg-green-500 text-white px-3 py-2 rounded-xl hover:bg-green-600 disabled:opacity-60">
               {loadingContact ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <MessageCircle className="w-3.5 h-3.5" />}
-              Chat
+              {t(lang, 'chat')}
             </button>
           </>
         ) : status === 'pending' ? (
           <span className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-xl bg-yellow-500/20 text-yellow-400">
-            <Clock className="w-3.5 h-3.5" /> Pending
+            <Clock className="w-3.5 h-3.5" /> {t(lang, 'pending')}
           </span>
         ) : (
           <button onClick={() => onRequest(user?._id)}
             className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-xl bg-primary-400 text-white hover:bg-primary-500">
-            <UserPlus className="w-3.5 h-3.5" /> Connect
+            <UserPlus className="w-3.5 h-3.5" /> {t(lang, 'connect')}
           </button>
         )}
       </div>
@@ -111,6 +113,7 @@ function UserCard({ profile, status, onRequest }) {
 }
 
 function RequestCard({ request, onRespond }) {
+  const { lang } = useLanguage();
   return (
     <div className="bg-navy-700 rounded-2xl p-4 flex items-center gap-3">
       <div className="w-12 h-12 rounded-full bg-primary-400/20 flex items-center justify-center flex-shrink-0">
@@ -119,7 +122,7 @@ function RequestCard({ request, onRespond }) {
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-white text-sm">{request.from?.name}</p>
         <p className="text-xs text-slate-400 capitalize">{request.from?.role}</p>
-        <p className="text-xs text-slate-500 mt-0.5">Wants to connect with you</p>
+        <p className="text-xs text-slate-500 mt-0.5">{t(lang, 'wantsToConnect')}</p>
       </div>
       <div className="flex gap-2 flex-shrink-0">
         <button onClick={() => onRespond(request._id, 'accepted')}
@@ -137,6 +140,7 @@ function RequestCard({ request, onRespond }) {
 
 function NearbyTab({ connectedIds, pendingIds, onRequest }) {
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const [radius, setRadius] = useState(10);
   const [nearby, setNearby] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -161,13 +165,13 @@ function NearbyTab({ connectedIds, pendingIds, onRequest }) {
     ? [mappable[0].location.coordinates[1], mappable[0].location.coordinates[0]]
     : [12.9141, 74.8560];
 
-  const oppositeRole = user?.role === 'worker' ? 'Providers' : 'Workers';
+  const oppositeRole = user?.role === 'worker' ? t(lang, 'provider') : t(lang, 'worker');
 
   return (
     <div className="space-y-3">
       {/* Radius selector */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-400">{mappable.length} {oppositeRole} found nearby</p>
+        <p className="text-xs text-slate-400">{mappable.length} {oppositeRole} {t(lang, 'foundNearby')}</p>
         <div className="flex gap-1">
           {[5, 10, 20].map(r => (
             <button key={r} onClick={() => setRadius(r)}
@@ -183,8 +187,8 @@ function NearbyTab({ connectedIds, pendingIds, onRequest }) {
       ) : mappable.length === 0 ? (
         <div className="bg-navy-700 rounded-2xl p-10 text-center">
           <p className="text-3xl mb-2">📍</p>
-          <p className="text-white font-semibold text-sm">No {oppositeRole} nearby</p>
-          <p className="text-slate-400 text-xs mt-1">Try increasing the radius or update your location in Profile</p>
+          <p className="text-white font-semibold text-sm">{t(lang, 'noNearby')} {oppositeRole}</p>
+          <p className="text-slate-400 text-xs mt-1">{t(lang, 'tryRadius')}</p>
         </div>
       ) : (
         <>
@@ -243,13 +247,13 @@ function NearbyTab({ connectedIds, pendingIds, onRequest }) {
                     <p className="text-xs text-slate-400">{u.profile?.jobCategory || u.role} · <span className="text-primary-400">{u.distanceKm}km away</span></p>
                   </div>
                   {status === 'connected' ? (
-                    <span className="text-xs text-green-400 font-medium">Connected</span>
+                    <span className="text-xs text-green-400 font-medium">{t(lang, 'connected')}</span>
                   ) : status === 'pending' ? (
-                    <span className="text-xs text-yellow-400 font-medium">Pending</span>
+                    <span className="text-xs text-yellow-400 font-medium">{t(lang, 'pending')}</span>
                   ) : (
                     <button onClick={() => onRequest(u._id.toString())}
                       className="text-xs bg-primary-400 text-white px-3 py-1.5 rounded-xl hover:bg-primary-500 flex items-center gap-1">
-                      <UserPlus className="w-3 h-3" /> Connect
+                      <UserPlus className="w-3 h-3" /> {t(lang, 'connect')}
                     </button>
                   )}
                 </div>
@@ -264,6 +268,7 @@ function NearbyTab({ connectedIds, pendingIds, onRequest }) {
 
 export default function ConnectionsPage() {
   useAuth();
+  const { lang } = useLanguage();
   const [tab, setTab] = useState('discover');
   const [users, setUsers] = useState([]);
   const [connectedIds, setConnectedIds] = useState([]);
@@ -345,15 +350,15 @@ export default function ConnectionsPage() {
   );
 
   const tabs = [
-    { key: 'discover', label: 'Discover' },
-    { key: 'nearby', label: 'Nearby' },
-    { key: 'connections', label: `Mine${connectedIds.length > 0 ? ` (${connectedIds.length})` : ''}` },
-    { key: 'requests', label: `Requests${incomingRequests.length > 0 ? ` (${incomingRequests.length})` : ''}` },
+    { key: 'discover', label: t(lang, 'discover') },
+    { key: 'nearby', label: t(lang, 'nearby') },
+    { key: 'connections', label: `${t(lang, 'mine')}${connectedIds.length > 0 ? ` (${connectedIds.length})` : ''}` },
+    { key: 'requests', label: `${t(lang, 'requests')}${incomingRequests.length > 0 ? ` (${incomingRequests.length})` : ''}` },
   ];
 
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-4">
-      <h1 className="text-xl font-bold text-white">Connections</h1>
+      <h1 className="text-xl font-bold text-white">{t(lang, 'connectionsTitle')}</h1>
 
       <div className="flex gap-2">
         {tabs.map((t) => (
@@ -366,13 +371,13 @@ export default function ConnectionsPage() {
 
       {tab === 'discover' && (
         <>
-          <input type="text" placeholder="Search by name or skill..." value={search}
+          <input type="text" placeholder={t(lang, 'searchByName')} value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-white/20 bg-navy-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 placeholder:text-slate-500" />
           {loading ? (
             <div className="flex justify-center py-8"><Loader className="w-6 h-6 animate-spin text-primary-400" /></div>
           ) : filtered.length === 0 ? (
-            <div className="bg-navy-700 rounded-2xl p-10 text-center"><p className="text-3xl mb-2">👥</p><p className="text-white font-semibold text-sm">No users found</p></div>
+            <div className="bg-navy-700 rounded-2xl p-10 text-center"><p className="text-3xl mb-2">👥</p><p className="text-white font-semibold text-sm">{t(lang, 'noUsersFound')}</p></div>
           ) : (
             <div className="space-y-3">
               {filtered.map((profile) => (
@@ -388,8 +393,8 @@ export default function ConnectionsPage() {
           {connectedIds.length === 0 ? (
             <div className="bg-navy-700 rounded-2xl p-10 text-center">
               <p className="text-3xl mb-2">🤝</p>
-              <p className="text-white font-semibold text-sm">No connections yet</p>
-              <button onClick={() => setTab('discover')} className="mt-3 bg-primary-400 text-white text-xs px-4 py-2 rounded-xl">Discover people</button>
+              <p className="text-white font-semibold text-sm">{t(lang, 'noConnections')}</p>
+              <button onClick={() => setTab('discover')} className="mt-3 bg-primary-400 text-white text-xs px-4 py-2 rounded-xl">{t(lang, 'discoverPeople')}</button>
             </div>
           ) : (
             users.filter((p) => connectedIds.includes(p.user?._id)).map((profile) => (
@@ -408,7 +413,7 @@ export default function ConnectionsPage() {
           {incomingRequests.length === 0 ? (
             <div className="bg-navy-700 rounded-2xl p-10 text-center">
               <p className="text-3xl mb-2">📬</p>
-              <p className="text-white font-semibold text-sm">No pending requests</p>
+              <p className="text-white font-semibold text-sm">{t(lang, 'noPendingRequests')}</p>
             </div>
           ) : (
             incomingRequests.map((req) => (

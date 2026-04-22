@@ -3,6 +3,8 @@ import { MapPin, Star, Plus, X, Loader, Check, Phone } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { t } from '../utils/i18n';
 
 const SKILL_SUGGESTIONS = ['Cleaning', 'Cooking', 'Driving', 'Gardening', 'Security', 'Delivery', 'Carpentry', 'Plumbing', 'Painting', 'Babysitting'];
 
@@ -18,6 +20,7 @@ function StarRating({ value }) {
 
 export default function ProfilePage() {
   const { user, login } = useAuth();
+  const { lang } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -155,18 +158,18 @@ export default function ProfilePage() {
           <button
             onClick={toggleStatus}
             className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${
-              profile?.status === 'available'
-                ? 'bg-green-400/30 text-green-100'
-                : 'bg-red-400/30 text-red-100'
+              profile?.status === 'available' ? 'bg-green-400/30 text-green-100' : 'bg-red-400/30 text-red-100'
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${profile?.status === 'available' ? 'bg-green-300' : 'bg-red-300'}`} />
-            {profile?.status === 'available' ? 'Available' : 'Busy'}
+            {profile?.status === 'available' ? t(lang, 'available') : t(lang, 'busy')}
           </button>
           <div className="flex items-center gap-1.5">
             <StarRating value={profile?.averageRating || 0} />
             <span className="text-primary-100 text-xs">
-              {profile?.averageRating ? `${profile.averageRating} (${profile.totalRatings})` : 'No ratings yet'}
+              {profile?.averageRating
+                ? `${profile.averageRating} (${profile.totalRatings})`
+                : t(lang, 'noRatings')}
             </span>
           </div>
         </div>
@@ -176,118 +179,81 @@ export default function ProfilePage() {
       <div className="flex justify-end">
         {editMode ? (
           <div className="flex gap-2">
-            <button
-              onClick={() => setEditMode(false)}
-              className="text-sm px-4 py-2 rounded-xl border border-white/20 text-slate-300 hover:bg-white/5"
-            >
-              Cancel
+            <button onClick={() => setEditMode(false)}
+              className="text-sm px-4 py-2 rounded-xl border border-white/20 text-slate-300 hover:bg-white/5">
+              {t(lang, 'cancel')}
             </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="text-sm px-4 py-2 rounded-xl bg-primary-400 text-white font-semibold flex items-center gap-1.5 hover:bg-primary-500 disabled:opacity-60"
-            >
+            <button onClick={handleSave} disabled={saving}
+              className="text-sm px-4 py-2 rounded-xl bg-primary-400 text-white font-semibold flex items-center gap-1.5 hover:bg-primary-500 disabled:opacity-60">
               {saving ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-              Save
+              {t(lang, 'save')}
             </button>
           </div>
         ) : (
-          <button
-            onClick={() => setEditMode(true)}
-            className="text-sm px-4 py-2 rounded-xl bg-primary-400 text-white font-semibold hover:bg-primary-500"
-          >
-            Edit Profile
+          <button onClick={() => setEditMode(true)}
+            className="text-sm px-4 py-2 rounded-xl bg-primary-400 text-white font-semibold hover:bg-primary-500">
+            {t(lang, 'editProfile')}
           </button>
         )}
       </div>
 
       {/* Personal details */}
       <div className="bg-navy-700 rounded-2xl p-4 shadow-sm space-y-3">
-        <p className="text-sm font-semibold text-white">Personal Details</p>
+        <p className="text-sm font-semibold text-white">{t(lang, 'personalDetails')}</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Full Name</label>
-            <input
-              disabled={!editMode}
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              className={inputCls}
-            />
+            <label className="text-xs text-slate-400 block mb-1">{t(lang, 'fullName')}</label>
+            <input disabled={!editMode} value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className={inputCls} />
           </div>
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Age</label>
-            <input
-              disabled={!editMode}
-              type="number"
-              value={form.age}
-              onChange={(e) => setForm((f) => ({ ...f, age: e.target.value }))}
-              className={inputCls}
-            />
+            <label className="text-xs text-slate-400 block mb-1">{t(lang, 'age')}</label>
+            <input disabled={!editMode} type="number" value={form.age}
+              onChange={(e) => setForm((f) => ({ ...f, age: e.target.value }))} className={inputCls} />
           </div>
           <div>
-            <label className="text-xs text-slate-400 block mb-1">WhatsApp</label>
-            <input
-              disabled={!editMode}
-              value={form.whatsappNumber}
-              onChange={(e) => setForm((f) => ({ ...f, whatsappNumber: e.target.value }))}
-              className={inputCls}
-            />
+            <label className="text-xs text-slate-400 block mb-1">{t(lang, 'whatsapp')}</label>
+            <input disabled={!editMode} value={form.whatsappNumber}
+              onChange={(e) => setForm((f) => ({ ...f, whatsappNumber: e.target.value }))} className={inputCls} />
           </div>
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Language</label>
-            <select
-              disabled={!editMode}
-              value={form.language}
-              onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))}
-              className={inputCls}
-            >
+            <label className="text-xs text-slate-400 block mb-1">{t(lang, 'language')}</label>
+            <select disabled={!editMode} value={form.language}
+              onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))} className={inputCls}>
               <option value="en">English</option>
               <option value="kn">ಕನ್ನಡ (Kannada)</option>
             </select>
           </div>
         </div>
         <div>
-          <label className="text-xs text-slate-400 block mb-1">Bio</label>
-          <textarea
-            disabled={!editMode}
-            value={form.bio}
+          <label className="text-xs text-slate-400 block mb-1">{t(lang, 'bio')}</label>
+          <textarea disabled={!editMode} value={form.bio}
             onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-            rows={2}
-            placeholder="Tell employers a bit about yourself..."
-            className={`${inputCls} resize-none`}
-          />
+            rows={2} placeholder={t(lang, 'bioPlaceholder')} className={`${inputCls} resize-none`} />
         </div>
       </div>
 
       {/* Professional details */}
       <div className="bg-navy-700 rounded-2xl p-4 shadow-sm space-y-3">
-        <p className="text-sm font-semibold text-white">Professional Details</p>
+        <p className="text-sm font-semibold text-white">{t(lang, 'professionalDetails')}</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Qualification</label>
-            <input
-              disabled={!editMode}
-              value={form.qualification}
+            <label className="text-xs text-slate-400 block mb-1">{t(lang, 'qualification')}</label>
+            <input disabled={!editMode} value={form.qualification}
               onChange={(e) => setForm((f) => ({ ...f, qualification: e.target.value }))}
-              placeholder="e.g. 10th Pass, ITI"
-              className={inputCls}
-            />
+              placeholder={t(lang, 'qualificationPlaceholder')} className={inputCls} />
           </div>
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Job Category</label>
-            <input
-              disabled={!editMode}
-              value={form.jobCategory}
+            <label className="text-xs text-slate-400 block mb-1">{t(lang, 'jobCategory')}</label>
+            <input disabled={!editMode} value={form.jobCategory}
               onChange={(e) => setForm((f) => ({ ...f, jobCategory: e.target.value }))}
-              placeholder="e.g. Cleaning"
-              className={inputCls}
-            />
+              placeholder={t(lang, 'jobCategoryPlaceholder')} className={inputCls} />
           </div>
         </div>
 
         {/* Skills */}
         <div>
-          <label className="text-xs text-slate-400 block mb-2">Skills</label>
+          <label className="text-xs text-slate-400 block mb-2">{t(lang, 'skills')}</label>
           <div className="flex flex-wrap gap-2 mb-2">
             {form.skills.map((skill) => (
               <span key={skill} className="flex items-center gap-1 bg-primary-400/20 text-primary-300 text-xs px-3 py-1 rounded-full">
@@ -303,29 +269,19 @@ export default function ProfilePage() {
           {editMode && (
             <>
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={skillInput}
+                <input type="text" value={skillInput}
                   onChange={(e) => setSkillInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill(skillInput))}
-                  placeholder="Type a skill and press Enter"
-                  className={inputCls}
-                />
-                <button
-                  type="button"
-                  onClick={() => addSkill(skillInput)}
-                  className="p-2.5 bg-primary-400 text-white rounded-xl hover:bg-primary-500"
-                >
+                  placeholder={t(lang, 'skillsPlaceholder')} className={inputCls} />
+                <button type="button" onClick={() => addSkill(skillInput)}
+                  className="p-2.5 bg-primary-400 text-white rounded-xl hover:bg-primary-500">
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {SKILL_SUGGESTIONS.filter((s) => !form.skills.includes(s)).slice(0, 6).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => addSkill(s)}
-                    className="text-xs px-2.5 py-1 border border-dashed border-white/20 text-slate-400 rounded-full hover:border-primary-400/50 hover:text-primary-400 transition-colors"
-                  >
+                  <button key={s} onClick={() => addSkill(s)}
+                    className="text-xs px-2.5 py-1 border border-dashed border-white/20 text-slate-400 rounded-full hover:border-primary-400/50 hover:text-primary-400 transition-colors">
                     + {s}
                   </button>
                 ))}
@@ -338,23 +294,15 @@ export default function ProfilePage() {
       {/* Location */}
       <div className="bg-navy-700 rounded-2xl p-4 shadow-sm space-y-3">
         <p className="text-sm font-semibold text-white flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-primary-400" /> Location
+          <MapPin className="w-4 h-4 text-primary-400" /> {t(lang, 'locationLabel')}
         </p>
         <div className="flex gap-2">
-          <input
-            disabled={!editMode}
-            value={form.address}
+          <input disabled={!editMode} value={form.address}
             onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-            placeholder="Your area / city"
-            className={`flex-1 ${inputCls}`}
-          />
+            placeholder={t(lang, 'locationPlaceholder')} className={`flex-1 ${inputCls}`} />
           {editMode && (
-            <button
-              type="button"
-              onClick={detectLocation}
-              disabled={locating}
-              className="p-2.5 border border-white/20 rounded-xl text-primary-400 hover:bg-primary-400/10 transition-colors disabled:opacity-60"
-            >
+            <button type="button" onClick={detectLocation} disabled={locating}
+              className="p-2.5 border border-white/20 rounded-xl text-primary-400 hover:bg-primary-400/10 transition-colors disabled:opacity-60">
               {locating ? <Loader className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
             </button>
           )}

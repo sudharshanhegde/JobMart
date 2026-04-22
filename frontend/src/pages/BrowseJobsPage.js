@@ -2,15 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, X } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { t, tJobType, tWorkMode } from '../utils/i18n';
 import toast from 'react-hot-toast';
 import SwipeJobCards from '../components/jobs/SwipeJobCards';
 
 const CATEGORIES = ['Cleaning', 'Delivery', 'Cooking', 'Gardening', 'Security', 'Driving', 'Construction', 'Shop Assistant', 'Babysitting', 'Other'];
+const CATEGORY_KEYS = { Cleaning: 'catCleaning', Delivery: 'catDelivery', Cooking: 'catCooking', Gardening: 'catGardening', Security: 'catSecurity', Driving: 'catDriving', Construction: 'catConstruction', 'Shop Assistant': 'catShopAssistant', Babysitting: 'catBabysitting', Other: 'catOther' };
 const JOB_TYPES = ['part-time', 'full-time'];
 const WORK_MODES = ['remote', 'offline'];
 
 export default function BrowseJobsPage() {
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -40,8 +44,8 @@ export default function BrowseJobsPage() {
   }, [search, filters]);
 
   useEffect(() => {
-    const t = setTimeout(fetchJobs, 400);
-    return () => clearTimeout(t);
+    const timer = setTimeout(fetchJobs, 400);
+    return () => clearTimeout(timer);
   }, [fetchJobs]);
 
   useEffect(() => {
@@ -70,7 +74,7 @@ export default function BrowseJobsPage() {
             <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search jobs..."
+              placeholder={t(lang, 'searchJobs')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 px-2 py-2.5 text-sm focus:outline-none bg-transparent text-white placeholder:text-slate-500"
@@ -101,9 +105,9 @@ export default function BrowseJobsPage() {
         {showFilters && (
           <div className="bg-navy-700 rounded-2xl p-3 space-y-3 border border-white/10">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-white">Filters</p>
+              <p className="text-xs font-semibold text-white">{t(lang, 'filters')}</p>
               {activeFilterCount > 0 && (
-                <button onClick={clearFilters} className="text-xs text-red-400">Clear all</button>
+                <button onClick={clearFilters} className="text-xs text-red-400">{t(lang, 'clearAll')}</button>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -111,30 +115,30 @@ export default function BrowseJobsPage() {
                 <button key={cat}
                   onClick={() => setFilters((f) => ({ ...f, category: f.category === cat ? '' : cat }))}
                   className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${filters.category === cat ? 'bg-primary-400 text-white border-primary-400' : 'border-white/20 text-slate-300'}`}>
-                  {cat}
+                  {t(lang, CATEGORY_KEYS[cat])}
                 </button>
               ))}
             </div>
             <div className="flex gap-2">
-              {JOB_TYPES.map((t) => (
-                <button key={t}
-                  onClick={() => setFilters((f) => ({ ...f, jobType: f.jobType === t ? '' : t }))}
-                  className={`text-xs px-3 py-1 rounded-full border capitalize transition-colors ${filters.jobType === t ? 'bg-primary-400 text-white border-primary-400' : 'border-white/20 text-slate-300'}`}>
-                  {t}
+              {JOB_TYPES.map((type) => (
+                <button key={type}
+                  onClick={() => setFilters((f) => ({ ...f, jobType: f.jobType === type ? '' : type }))}
+                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${filters.jobType === type ? 'bg-primary-400 text-white border-primary-400' : 'border-white/20 text-slate-300'}`}>
+                  {tJobType(lang, type)}
                 </button>
               ))}
-              {WORK_MODES.map((m) => (
-                <button key={m}
-                  onClick={() => setFilters((f) => ({ ...f, workMode: f.workMode === m ? '' : m }))}
-                  className={`text-xs px-3 py-1 rounded-full border capitalize transition-colors ${filters.workMode === m ? 'bg-primary-400 text-white border-primary-400' : 'border-white/20 text-slate-300'}`}>
-                  {m}
+              {WORK_MODES.map((mode) => (
+                <button key={mode}
+                  onClick={() => setFilters((f) => ({ ...f, workMode: f.workMode === mode ? '' : mode }))}
+                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${filters.workMode === mode ? 'bg-primary-400 text-white border-primary-400' : 'border-white/20 text-slate-300'}`}>
+                  {tWorkMode(lang, mode)}
                 </button>
               ))}
             </div>
             <div className="flex gap-2">
-              <input type="number" placeholder="Min ₹" value={filters.minSalary}
+              <input type="number" placeholder={t(lang, 'minSalary')} value={filters.minSalary}
                 onChange={(e) => setFilters((f) => ({ ...f, minSalary: e.target.value }))} className={inputCls} />
-              <input type="number" placeholder="Max ₹" value={filters.maxSalary}
+              <input type="number" placeholder={t(lang, 'maxSalary')} value={filters.maxSalary}
                 onChange={(e) => setFilters((f) => ({ ...f, maxSalary: e.target.value }))} className={inputCls} />
             </div>
           </div>
@@ -147,7 +151,7 @@ export default function BrowseJobsPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="w-10 h-10 border-2 border-primary-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-slate-400 text-sm">Loading jobs...</p>
+              <p className="text-slate-400 text-sm">{t(lang, 'loadingJobs')}</p>
             </div>
           </div>
         ) : (

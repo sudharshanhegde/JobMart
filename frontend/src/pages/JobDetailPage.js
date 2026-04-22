@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Clock, Wifi, Users, Star, Bookmark, BookmarkCheck, ArrowLeft, Loader, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { t, tStatus, tJobType, tWorkMode, tPeriod } from '../utils/i18n';
 import toast from 'react-hot-toast';
 
 const APP_STATUS_STYLE = {
@@ -16,6 +18,7 @@ export default function JobDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
@@ -104,7 +107,7 @@ export default function JobDetailPage() {
       {/* Header */}
       <div className="bg-primary-500 px-4 pt-4 pb-10 relative">
         <button onClick={() => navigate(-1)} className="text-white mb-4 flex items-center gap-1 text-sm hover:text-primary-200">
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="w-4 h-4" /> {t(lang, 'back')}
         </button>
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -123,10 +126,10 @@ export default function JobDetailPage() {
         {/* Quick info chips */}
         <div className="flex flex-wrap gap-2">
           {[
-            { icon: Clock, label: job.jobType },
-            { icon: Wifi, label: job.workMode },
-            { icon: Users, label: `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left` },
-            { icon: MapPin, label: job.location?.address || 'Location TBD' },
+            { icon: Clock, label: tJobType(lang, job.jobType) },
+            { icon: Wifi, label: tWorkMode(lang, job.workMode) },
+            { icon: Users, label: `${spotsLeft} ${spotsLeft !== 1 ? t(lang, 'spotsLeft') : t(lang, 'spotLeft')}` },
+            { icon: MapPin, label: job.location?.address || t(lang, 'locationTBD') },
           ].map(({ icon: Icon, label }) => (
             <span key={label} className="flex items-center gap-1.5 bg-navy-700 text-slate-300 text-xs px-3 py-1.5 rounded-full shadow-sm capitalize">
               <Icon className="w-3 h-3 text-primary-400" /> {label}
@@ -139,7 +142,7 @@ export default function JobDetailPage() {
           )}
           {job.aiGenerated && (
             <span className="flex items-center gap-1 bg-purple-500/20 text-purple-400 text-xs px-3 py-1.5 rounded-full">
-              <Sparkles className="w-3 h-3" /> AI Description
+              <Sparkles className="w-3 h-3" /> {t(lang, 'aiDescription')}
             </span>
           )}
         </div>
@@ -147,30 +150,30 @@ export default function JobDetailPage() {
         {/* Salary card */}
         <div className="bg-navy-700 rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs text-slate-400">Salary</p>
+            <p className="text-xs text-slate-400">{t(lang, 'salary')}</p>
             <p className="text-2xl font-bold text-white">₹{job.salary?.amount?.toLocaleString()}</p>
-            <p className="text-xs text-slate-400">per {job.salary?.period}</p>
+            <p className="text-xs text-slate-400">{t(lang, 'per')} {tPeriod(lang, job.salary?.period)}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-slate-400">Status</p>
+            <p className="text-xs text-slate-400">{t(lang, 'status')}</p>
             <span className={`text-sm font-semibold capitalize ${
               job.status === 'open' ? 'text-green-400' :
               job.status === 'completed' ? 'text-slate-400' : 'text-primary-400'
-            }`}>{job.status}</span>
+            }`}>{tStatus(lang, job.status)}</span>
           </div>
         </div>
 
         {/* Description */}
         {job.description && (
           <div className="bg-navy-700 rounded-2xl p-4 shadow-sm">
-            <p className="text-sm font-semibold text-white mb-2">About this job</p>
+            <p className="text-sm font-semibold text-white mb-2">{t(lang, 'aboutJob')}</p>
             <p className="text-sm text-slate-400 whitespace-pre-line leading-relaxed">{job.description}</p>
           </div>
         )}
 
         {/* Provider info */}
         <div className="bg-navy-700 rounded-2xl p-4 shadow-sm">
-          <p className="text-sm font-semibold text-white mb-3">Posted by</p>
+          <p className="text-sm font-semibold text-white mb-3">{t(lang, 'postedBy')}</p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary-400/20 flex items-center justify-center">
@@ -178,10 +181,10 @@ export default function JobDetailPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-white">{job.provider?.name}</p>
-                <p className="text-xs text-slate-400">{job.provider?.location?.address || 'Location not set'}</p>
+                <p className="text-xs text-slate-400">{job.provider?.location?.address || t(lang, 'locationNotSet')}</p>
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-1">Connect with this provider to get contact details</p>
+            <p className="text-xs text-slate-500 mt-1">{t(lang, 'connectForContact')}</p>
           </div>
         </div>
 
@@ -191,15 +194,15 @@ export default function JobDetailPage() {
             {alreadyApplied ? (
               <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
                 <Star className="w-4 h-4 fill-green-400 text-green-400" />
-                You have already applied for this job
+                {t(lang, 'alreadyApplied')}
               </div>
             ) : showApplyForm ? (
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-white">Write a short note (optional)</p>
+                <p className="text-sm font-semibold text-white">{t(lang, 'coverNote')}</p>
                 <textarea
                   value={coverNote}
                   onChange={(e) => setCoverNote(e.target.value)}
-                  placeholder="Tell the provider why you're a good fit..."
+                  placeholder={t(lang, 'coverNotePlaceholder')}
                   rows={3}
                   className="w-full border border-white/20 bg-navy-800 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none placeholder:text-slate-500"
                 />
@@ -213,12 +216,12 @@ export default function JobDetailPage() {
                   <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold transition-colors ${showNegotiate ? 'bg-primary-400 border-primary-400 text-white' : 'border-primary-400/50'}`}>
                     {showNegotiate ? '✓' : '+'}
                   </span>
-                  Negotiate salary (posted: ₹{job.salary?.amount?.toLocaleString()}/{job.salary?.period})
+                  {t(lang, 'negotiateSalary')} (₹{job.salary?.amount?.toLocaleString()}/{tPeriod(lang, job.salary?.period)})
                 </button>
 
                 {showNegotiate && (
                   <div className="bg-navy-800 border border-primary-400/20 rounded-xl p-3 space-y-2">
-                    <p className="text-xs text-slate-400">Your expected salary ({job.salary?.period})</p>
+                    <p className="text-xs text-slate-400">{t(lang, 'expectedSalary')} ({tPeriod(lang, job.salary?.period)})</p>
                     <div className="flex items-center gap-2">
                       <span className="text-slate-400 text-sm">₹</span>
                       <input
@@ -229,15 +232,15 @@ export default function JobDetailPage() {
                         min={0}
                         className="flex-1 bg-transparent border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-400 placeholder:text-slate-600"
                       />
-                      <span className="text-xs text-slate-500">/{job.salary?.period}</span>
+                      <span className="text-xs text-slate-500">/{tPeriod(lang, job.salary?.period)}</span>
                     </div>
-                    <p className="text-[11px] text-slate-500">The provider will see your proposed rate</p>
+                    <p className="text-[11px] text-slate-500">{t(lang, 'salaryHint')}</p>
                   </div>
                 )}
 
                 <div className="flex gap-2">
                   <button onClick={() => { setShowApplyForm(false); setShowNegotiate(false); setProposedSalary(''); }} className="flex-1 py-3 rounded-xl border border-white/20 text-slate-300 text-sm font-medium hover:bg-white/5">
-                    Cancel
+                    {t(lang, 'cancel')}
                   </button>
                   <button
                     onClick={handleApply}
@@ -245,7 +248,7 @@ export default function JobDetailPage() {
                     className="flex-1 py-3 rounded-xl bg-primary-400 text-white text-sm font-semibold hover:bg-primary-500 disabled:opacity-60 flex items-center justify-center gap-2"
                   >
                     {applying ? <Loader className="w-4 h-4 animate-spin" /> : null}
-                    Submit Application
+                    {t(lang, 'submitApplication')}
                   </button>
                 </div>
               </div>
@@ -254,7 +257,7 @@ export default function JobDetailPage() {
                 onClick={() => setShowApplyForm(true)}
                 className="w-full py-3.5 bg-primary-400 text-white font-semibold rounded-xl hover:bg-primary-500 transition-colors"
               >
-                Apply for this Job
+                {t(lang, 'applyForJob')}
               </button>
             )}
           </div>
@@ -265,15 +268,15 @@ export default function JobDetailPage() {
           <div className="bg-navy-700 rounded-2xl shadow-sm overflow-hidden">
             <div className="p-4 flex items-center justify-between">
               <div>
-                <p className="font-semibold text-white text-sm">Your Job Post</p>
-                <p className="text-xs text-slate-400 mt-0.5">{job.filledVacancies}/{job.vacancies} positions filled</p>
+                <p className="font-semibold text-white text-sm">{t(lang, 'yourJobPost')}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{job.filledVacancies}/{job.vacancies} {t(lang, 'positionsFilled')}</p>
               </div>
               <button
                 onClick={toggleApplicants}
                 className="flex items-center gap-1.5 text-xs bg-navy-800 border border-white/10 text-slate-300 px-3 py-2 rounded-lg hover:bg-white/10"
               >
                 <Users className="w-3.5 h-3.5" />
-                Applicants
+                {t(lang, 'applicants')}
                 {showApplicants ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               </button>
             </div>
@@ -284,7 +287,7 @@ export default function JobDetailPage() {
                     <Loader className="w-5 h-5 animate-spin text-primary-400" />
                   </div>
                 ) : applicants.length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-3">No applicants yet</p>
+                  <p className="text-xs text-slate-400 text-center py-3">{t(lang, 'noApplicantsYet')}</p>
                 ) : (
                   applicants.map((app) => (
                     <div key={app._id} className="flex items-center justify-between gap-2 border border-white/10 rounded-xl p-3 bg-navy-800">
@@ -299,12 +302,12 @@ export default function JobDetailPage() {
                               <Star className="w-3 h-3 fill-primary-400" /> {app.applicantProfile.averageRating} ({app.applicantProfile.totalRatings})
                             </span>
                           ) : (
-                            <span className="text-[10px] text-slate-500">No ratings yet</span>
+                            <span className="text-[10px] text-slate-500">{t(lang, 'noRatings')}</span>
                           )}
                         </div>
                       </div>
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${APP_STATUS_STYLE[app.status]}`}>
-                        {app.status}
+                        {tStatus(lang, app.status)}
                       </span>
                     </div>
                   ))
